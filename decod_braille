@@ -1,0 +1,51 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+-- decodificador : recebe pacotes de 8 bits e retorna 6 bits(6 motores)
+-- motores: 1 ligado 0 desligado
+-- se o motor liga ou desliga é determinado pelas letras do alfabeto em braile.
+--    motor0 ºº  motor3
+--    motor1 ºº  motor4
+--    motor2 ºº  motor5
+entity decod_braille is
+port( letra : in std_logic_vector(7 downto 0);
+		motor: out std_logic_vector(5 downto 0));
+end decod_braille;
+
+architecture decod of decod_braille is 
+begin 
+
+ process(letra)
+    begin  
+        case letra is
+            when "01100001" => motor<=   "100000";--a
+            when "01100010" => motor<=   "110000";
+            when "01100011" => motor<=   "100100";
+            when "01100100" => motor<=   "100110";
+            when "01100101" => motor<=   "100010";
+            when "01100110" => motor<=   "110100";
+            when "01100111" => motor<=   "110110";
+            when "01101000" => motor<=   "110010";
+            when "01101001" => motor<=   "010100";--i		
+				    when "01101010" => motor<=   "010110";--j
+            when "01101011" => motor<=   "101000";
+            when "01101100" => motor<=   "111000";
+            when "01101101" => motor<=   "101100";
+            when "01101110" => motor<=   "101110";
+            when "01101111" => motor<=   "101010";--o
+            when "01110000" => motor<=   "111100";--
+            when "01110001" => motor<=   "111110";
+            when "01110010" => motor<=   "111010"; --r
+				    when "01110011" => motor<=   "011100";--s
+            when "01110100" => motor<=   "011110";
+            when "01110101" => motor<=   "101001";
+            when "01110110" => motor<=   "111001";
+            when "01110111" => motor<=   "010111";
+            when "01111000" => motor<=   "101101";
+            when "01111001" => motor<=   "101111";
+            when "01111010" => motor<=   "101011";--z
+            when others     => motor<=   "000000";
+        end case;
+    end process;
+
+end decod;
