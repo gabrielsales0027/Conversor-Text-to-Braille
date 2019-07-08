@@ -1,0 +1,57 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity conversor is
+port(receptor :in std_logic; clk:in std_logic; motor: out std_logic_vector(5 downto 0));
+end conversor;
+
+architecture arq of conversor is 
+--------------------------------------------------------------
+component decod_braille is
+port( letra : in std_logic_vector(7 downto 0); motor: out std_logic_vector(5 downto 0));
+end component;
+
+component shift_reg is 
+port( data_in:in std_logic; clk:in std_logic; data_out:out std_logic_vector(7 downto 0));
+end component;
+
+component div_clk is 
+port(clk_in: in std_logic; clk_out: out std_logic );
+end component;
+---------------------------------------------------------------
+signal pacote : std_logic_vector(7 downto 0);
+signal caract : std_logic_vector(7 downto 0) := "00000000";
+signal motor_sig : std_logic_vector(5 downto 0);
+signal trava : std_logic := '1'; -- fechado -1   aberto -0
+signal clk_usado: std_logic;
+signal recept: std_logic;
+---------------------------------------------------------------
+begin -- start bit = 0
+
+dividir_clock : div_clk port map(clk,clk_usado);
+recept <= receptor;
+process(receptor)
+begin
+if(receptor'event and receptor='0') then trava <= '0'; end if; end process;
+
+process(clk_usado)
+variable contador : integer := 0;
+begin
+if(clk_usado'event and clk_usado='0' and trava = '0') then
+
+		if(contador = 8) then
+		   caract <= pacote;
+			trava <= '1';
+			contador := 0;
+		
+		else
+			pacote(7 downto 1)<=pacote(6 downto 0);
+			pacote(0)<=recept;		
+			contador := contador +1;
+		end if;
+end if;
+end process;
+caractere : decod_braille port map (caract,motor_sig);
+motor <= motor_sig;
+
+end arq;
