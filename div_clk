@@ -1,0 +1,33 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity div_clk is 
+port(
+	clk_in: in std_logic;
+	clk_out: out std_logic 
+);
+end div_clk;
+
+architecture behavior of div_clk is 
+signal cont_clk: integer:=0;
+signal clk : std_logic := '0';
+
+begin 
+
+estimulo: process(clk_in) 
+begin
+
+if(clk_in'event and clk_in='0') then
+			cont_clk <= cont_clk + 1;
+			
+			if(cont_clk = 2604) then
+				clk <= not clk;
+				cont_clk <= 0;
+				
+			end if;
+		end if;
+
+end process;
+	clk_out <= clk;
+
+end behavior;
