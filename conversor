@@ -11,10 +11,6 @@ component decod_braille is
 port( letra : in std_logic_vector(7 downto 0); motor: out std_logic_vector(5 downto 0));
 end component;
 
-component shift_reg is 
-port( data_in:in std_logic; clk:in std_logic; data_out:out std_logic_vector(7 downto 0));
-end component;
-
 component div_clk is 
 port(clk_in: in std_logic; clk_out: out std_logic );
 end component;
@@ -22,7 +18,8 @@ end component;
 signal pacote : std_logic_vector(7 downto 0);
 signal caract : std_logic_vector(7 downto 0) := "00000000";
 signal motor_sig : std_logic_vector(5 downto 0);
-signal trava : std_logic := '1'; -- fechado -1   aberto -0
+signal trava1 : std_logic := '1'; 
+signal trava2 : std_logic := '1';-- fechado -1   aberto -0
 signal clk_usado: std_logic;
 signal recept: std_logic;
 ---------------------------------------------------------------
@@ -32,16 +29,24 @@ dividir_clock : div_clk port map(clk,clk_usado);
 recept <= receptor;
 process(receptor)
 begin
-if(receptor'event and receptor='0') then trava <= '0'; end if; end process;
+if(receptor'event and receptor='0' and trava1=trava2) then trava1 <= not trava2; end if; end process;
 
 process(clk_usado)
 variable contador : integer := 0;
 begin
-if(clk_usado'event and clk_usado='0' and trava = '0') then
+if(clk_usado'event and clk_usado='1' and trava1/=trava2) then
 
 		if(contador = 8) then
-		   caract <= pacote;
-			trava <= '1';
+		   caract(0) <= pacote(6);
+			caract(1) <= pacote(5);
+			caract(2) <= pacote(4);
+			caract(3) <= pacote(3);
+			caract(4) <= pacote(2);
+			caract(5) <= pacote(1);
+			caract(6) <= pacote(0);
+			caract(7) <= '0';
+			
+			trava2 <= trava1;
 			contador := 0;
 		
 		else
@@ -51,6 +56,7 @@ if(clk_usado'event and clk_usado='0' and trava = '0') then
 		end if;
 end if;
 end process;
+
 caractere : decod_braille port map (caract,motor_sig);
 motor <= motor_sig;
 
