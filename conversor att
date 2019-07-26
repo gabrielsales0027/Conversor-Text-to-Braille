@@ -59,7 +59,7 @@ end process;
 
 process(destrava)
 begin
-if(destrava'event and destrava = '1')then
+if(destrava'event and destrava = '1' and trava3/=trava4)then
 trava4 <= not trava4;
 end if;
 end process;
