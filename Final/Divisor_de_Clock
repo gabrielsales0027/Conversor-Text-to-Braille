@@ -1,0 +1,29 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.std_logic_unsigned.all;
+ 
+entity Divisor_de_Clock is							-- Divisor de Clock para igualar a contagem por segundo ao Baud rate
+port (
+		Clock: in std_logic; 
+		Clock_Dividido: out std_logic );
+end Divisor_de_Clock;
+ 
+architecture Divisor of Divisor_de_Clock is
+signal Dividido : std_logic;
+begin
+ 
+process(Clock)
+variable count: integer:= 0;                                               
+begin                                                      
+    if(Clock'event and Clock='1') then
+        count:= count+1;
+        if(count = 2604) then 					-- Baud Rate = 9600
+            Dividido <= not Dividido;
+            count:= 1;
+        end if;
+    end if;
+end process;
+ 
+Clock_Dividido <= Dividido;
+ 
+end Divisor;
