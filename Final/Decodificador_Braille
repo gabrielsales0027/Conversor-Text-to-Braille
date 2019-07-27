@@ -1,0 +1,54 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+-- decodificador : recebe pacotes de 8 bits e retorna 6 bits(6 Leds)
+-- Leds: 1 ligado 0 desligado
+-- se o Led liga ou desliga é determinado pelas letras do alfabeto em braile.
+--    Led0 ºº  Led3
+--    Led1 ºº  Led4
+--    Led2 ºº  Led5
+entity Decodificador_Braille  is
+port( 
+		Letra : in std_logic_vector(7 downto 0); 
+		Leds:  out std_logic_vector(5 downto 0)
+		);
+end Decodificador_Braille ;
+
+architecture Decodificador of Decodificador_Braille is 
+begin 
+
+process(Letra)
+    begin  
+        case Letra is
+            when "01100001" => Leds<=   "000001";--a
+            when "01100010" => Leds<=   "000011";--b
+            when "01100011" => Leds<=   "001001";--c
+            when "01100100" => Leds<=   "011001";--d
+            when "01100101" => Leds<=   "010001";--e
+            when "01100110" => Leds<=   "001011";--f
+            when "01100111" => Leds<=   "011011";--g
+            when "01101000" => Leds<=   "010011";--h
+            when "01101001" => Leds<=   "001010";--i		
+				when "01101010" => Leds<=   "011010";--j
+            when "01101011" => Leds<=   "000101";--k
+            when "01101100" => Leds<=   "000111";--l
+            when "01101101" => Leds<=   "001101";--m
+            when "01101110" => Leds<=   "011101";--n
+            when "01101111" => Leds<=   "010101";--o
+            when "01110000" => Leds<=   "001111";--p
+            when "01110001" => Leds<=   "011111";--q
+            when "01110010" => Leds<=   "010111"; --r
+				when "01110011" => Leds<=   "001110";--s
+            when "01110100" => Leds<=   "011110";--t
+            when "01110101" => Leds<=   "100101";--u
+            when "01110110" => Leds<=   "100111";--v
+            when "01110111" => Leds<=   "111010";--w
+            when "01111000" => Leds<=   "101101";--x
+            when "01111001" => Leds<=   "111101";--y
+            when "01111010" => Leds<=   "110101";--z
+				
+            when others     => Leds<=   "000000";
+        end case;
+    end process;
+
+end Decodificador ;
