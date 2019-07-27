@@ -1,0 +1,52 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+-- decodificador : recebe pacotes de 8 bits e retorna 6 bits(6 motores)
+-- motores: 1 ligado 0 desligado
+-- se o motor liga ou desliga é determinado pelas letras do alfabeto em braile.
+--    motor0 ºº  motor3
+--    motor1 ºº  motor4
+--    motor2 ºº  motor5
+entity decod_braille is
+port( letra : in std_logic_vector(7 downto 0);
+		motor: out std_logic_vector(5 downto 0));
+end decod_braille;
+
+architecture decod of decod_braille is 
+begin 
+
+ process(letra)
+    begin  
+        case letra is
+            when "01100001" => motor<=   "000001";--a
+            when "01100010" => motor<=   "000011";--b
+            when "01100011" => motor<=   "001001";--c
+            when "01100100" => motor<=   "011001";--d
+            when "01100101" => motor<=   "010001";--e
+            when "01100110" => motor<=   "001011";--f
+            when "01100111" => motor<=   "011011";--g
+            when "01101000" => motor<=   "010011";--h
+            when "01101001" => motor<=   "001010";--i		
+				when "01101010" => motor<=   "011010";--j
+            when "01101011" => motor<=   "000101";--k
+            when "01101100" => motor<=   "000111";--l
+            when "01101101" => motor<=   "001101";--m
+            when "01101110" => motor<=   "011101";--n
+            when "01101111" => motor<=   "010101";--o
+            when "01110000" => motor<=   "001111";--p
+            when "01110001" => motor<=   "011111";--q
+            when "01110010" => motor<=   "010111"; --r
+				when "01110011" => motor<=   "001110";--s
+            when "01110100" => motor<=   "011110";--t
+            when "01110101" => motor<=   "100101";--u
+            when "01110110" => motor<=   "100111";--v
+            when "01110111" => motor<=   "111010";--w
+            when "01111000" => motor<=   "101101";--x
+            when "01111001" => motor<=   "111101";--y
+            when "01111010" => motor<=   "110101";--z
+				
+            when others     => motor<=   "000000";
+        end case;
+    end process;
+
+end decod;
