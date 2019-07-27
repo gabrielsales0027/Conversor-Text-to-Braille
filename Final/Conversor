@@ -1,0 +1,94 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity Conversor is
+port(
+		Rx :in std_logic; 													-- Recebe os bits na porta serial;
+		Clock:in std_logic; 
+		Leds: out std_logic_vector(5 downto 0)
+	  );
+end Conversor;
+
+architecture Top_Level of Conversor is 
+							-- Declaração de Componentes
+--------------------------------------------------------------
+component Decodificador_Braille is
+port( 
+		Letra : in std_logic_vector(7 downto 0); 
+		Leds: out std_logic_vector(5 downto 0)
+	 );
+end component;
+
+component Divisor_de_Clock is 
+port(
+			Clock: in std_logic; 
+			Clock_Dividido: out std_logic );
+end component;
+							--Declaração de Sinais
+---------------------------------------------------------------
+signal Pacote : std_logic_vector(7 downto 0) := "00000000";	-- Armazena e desloca cada bit recebido até formar o byte.
+signal Caractere : std_logic_vector(7 downto 0) := "00000000";	-- Recebe o signal "pacote" após concluído o byte.
+signal Leds_Sinal : std_logic_vector(5 downto 0);					-- Recebe a sequência de bits para formar o caractere.
+signal Trava1,Trava2 : std_logic := '1'; 								-- Conjunto de travas para definir o início da transferência de bits.
+									
+signal Trava3,Trava4 : std_logic := '1';								-- Conjunto de travas para definir o fim da transferência de bits.
+signal Clock_Dividido: std_logic;										-- Signal utilizado para receber o clock após divisão.
+signal Receptor: std_logic;												-- Recebe o valor da entrada Rx.
+---------------------------------------------------------------
+begin -- start bit = 0
+
+Dividir_Clock : Divisor_de_Clock port map(Clock,Clock_Dividido);
+
+Receptor <= Rx; 																-- Armazena os bits recebidos pela serial.
+
+-- Processo 1: Processo de espera do Start Bit 
+-- O processo consiste em após o recebimento do primeiro bit '0' ocorre uma mudança na "Trava1" que antes eram igual a demais, e só retornará a ser igual após o processor ser concluido;
+process(Receptor)
+begin																										
+	if(Receptor'event and Receptor='0' and Trava1=Trava2 and Trava3=Trava4) then 
+		Trava1 <= not Trava1; 
+	end if; 
+end process;
+----------------------------------------------------------------
+
+-- Processo 2: Armazenamento do Byte
+-- Após detectado o envio do Start Bit, através de um registrador de deslocamento é feito o armazenamento dos 8 bits e após o término são utilizadas as travas. A "Trava2" é utilizada para interromper qualquer passagem de bit. E as travas 3 e 4 são utilizadas para criar um delay mínimo até a recepção do próximo byte.
+process(Clock_Dividido)
+variable Contador1,Contador2 : integer := 0;
+begin
+if(Clock_Dividido'event and Clock_Dividido='1' and Trava1/=Trava2) then
+
+		if(Contador1 = 8) then												-- Contador até 8, para o armazenamento dos bits;
+			Caractere(0) <= Pacote(6);
+			Caractere(1) <= Pacote(5);
+			Caractere(2) <= Pacote(4);
+			Caractere(3) <= Pacote(3);
+			Caractere(4) <= Pacote(2);										-- Inversão dos Bits após o deslocamento;
+			Caractere(5) <= Pacote(1);
+			Caractere(6) <= Pacote(0);
+			Caractere(7) <= '0';
+			Trava2 <= not Trava2;
+			Trava3<= not Trava3;
+			Contador1 := 0;													-- Contador vai para 0 até o envio do próximo byte;
+		else
+			Pacote(7 downto 1) <= Pacote(6 downto 0);					-- A cada pulso de Clock ocorre o deslocamento de bit e é adcionado o bit que chega da porta serial.
+			Pacote(0) <= Receptor;		
+			Contador1 := Contador1 +1;
+		end if;
+end if;
+
+	if(Clock_Dividido'event and Clock_Dividido='1' and Trava3/=Trava4)then
+		if(Contador2 = 10)then												-- Após o recebimento de todos os bits é criado um delay de 10 pulsos de clock.
+			Trava4<=not Trava4;	
+			Contador2 := 0;
+		else
+		Contador2 := Contador2+1;										
+		end if;
+	end if;
+end process;
+ ----------------------------------------------------------------
+ --Envio do Byte para o decodificador e Saída
+Envio_do_Caractere: Decodificador_Braille port map (Caractere,Leds_Sinal);
+Leds <= Leds_Sinal;															-- É enviado o caractere representado em binário pela tabela ASC e retorna a informação para os Leds.
+
+end Top_Level;
